@@ -352,7 +352,7 @@ function renderSpectrum(C){
   function colorOf(p){ return p.kind === "b" ? "var(--b)" : p.kind === "y" ? "var(--y)" : "var(--muted)"; }
   // etichetta completa: il pezzo di nome intero, mai tagliato
   function labelOf(p){
-    if (p.kind === "p") return state.expert ? "[M+H]+" : "intero";
+    if (p.kind === "p") return state.expert ? "[M+H]+ " + seq.join("") : seq.join("");
     var frag = p.kind === "b" ? seq.slice(0, p.i).join("") : seq.slice(n - p.i).join("");
     return state.expert ? p.kind + p.i + " " + frag : frag;
   }

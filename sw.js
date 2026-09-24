@@ -1,5 +1,5 @@
 // Service worker: salva l'app sul telefono così funziona anche senza rete
-const CACHE = "peptide-v1";
+const CACHE = "peptide-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "qrcode.js", "icona-192.png", "icona-512.png", "icona-180.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {

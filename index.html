@@ -165,8 +165,8 @@ footer{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;ga
     <h2>Come funziona</h2>
     <ol class="steps">
       <li><strong>Una collana</strong>Le proteine sono collane di amminoacidi. Ognuno ha una lettera: il tuo nome è una collana corta, cioè un peptide.</li>
-      <li><strong>Pesare e rompere</strong>Lo spettrometro di massa pesa le molecole con precisione enorme, fino alla quarta cifra decimale, e può spezzarle in pezzi.</li>
-      <li><strong>Leggere i pezzi</strong>La differenza di peso fra due pezzi vicini è il peso di una lettera. Così si leggono le proteine vere, lettera per lettera.</li>
+      <li><strong>Pesare e rompere</strong>Lo spettrometro di massa pesa le molecole con precisione enorme, sbagliando di pochi millesimi di dalton, e può spezzarle in pezzi.</li>
+      <li><strong>Leggere i pezzi</strong>La differenza di peso fra due pezzi vicini è il peso di una lettera. Così si possono leggere le proteine vere, lettera per lettera.</li>
     </ol>
   </section>
 
@@ -198,7 +198,7 @@ var AA = {
  G:["Glicina","Gly",{C:2,H:3,N:1,O:1},"La più piccola di tutte. Nel collagene, la proteina di pelle e tendini, un amminoacido su tre è glicina."],
  A:["Alanina","Ala",{C:3,H:5,N:1,O:1},"Una delle più semplici e delle più diffuse nelle proteine."],
  S:["Serina","Ser",{C:3,H:5,N:1,O:2},"Il nome viene da sericum, seta: fu isolata la prima volta dalla seta."],
- P:["Prolina","Pro",{C:5,H:7,N:1,O:1},"L'unica con l'azoto chiuso in un anello: dove c'è lei, la catena della proteina si piega."],
+ P:["Prolina","Pro",{C:5,H:7,N:1,O:1},"L'unica in cui l'azoto della catena principale è chiuso in un anello: dove c'è lei, la catena della proteina si piega."],
  V:["Valina","Val",{C:5,H:9,N:1,O:1},"Uno dei nove amminoacidi essenziali: il corpo non la produce, la prendiamo dal cibo."],
  T:["Treonina","Thr",{C:4,H:7,N:1,O:2},"L'ultima dei venti amminoacidi comuni a essere scoperta, nel 1935."],
  C:["Cisteina","Cys",{C:3,H:5,N:1,O:1,S:1},"Contiene zolfo. I ponti fra due cisteine tengono insieme la cheratina dei capelli."],
@@ -343,20 +343,52 @@ function renderSpectrum(C){
     : '<span><i style="background:var(--b)"></i>pezzi con l\'inizio del nome</span><span><i style="background:var(--y)"></i>pezzi con la fine del nome</span><span><i style="background:var(--muted)"></i>molecola intera</span>';
 
   var n = C.n, seq = state.seq;
+  var sel = state.sel;
+  function isSel(p){ return sel && sel.kind === p.kind && sel.i === p.i; }
+  function isRes(p){
+    if (!sel || sel.kind !== "r") return false;
+    return (p.kind === "b" && (p.i === sel.i || p.i === sel.i + 1)) || (p.kind === "y" && (p.i === n - 1 - sel.i || p.i === n - sel.i));
+  }
+  function colorOf(p){ return p.kind === "b" ? "var(--b)" : p.kind === "y" ? "var(--y)" : "var(--muted)"; }
+  // etichetta completa: il pezzo di nome intero, mai tagliato
+  function labelOf(p){
+    if (p.kind === "p") return state.expert ? "[M+H]+" : "intero";
+    var frag = p.kind === "b" ? seq.slice(0, p.i).join("") : seq.slice(n - p.i).join("");
+    return state.expert ? p.kind + p.i + " " + frag : frag;
+  }
+
+  var GAP = 15;                                   // spazio orizzontale per ogni etichetta verticale
+  var nPeaks = 2 * (n - 1) + 1;
   var avail = Math.max(300, sc.clientWidth || 700);
-  var W = Math.max(avail, n * 46 + 80), H = 330;
-  var L = 44, R = 18, top = 84, base = H - 42;
-  var mmax = Math.ceil(C.MH * 1.06 / 50) * 50;
-  var X = function(m){ return L + m / mmax * (W - L - R); };
-  var hmax = base - top - 26;
+  var L = 44, R = 18;
+  var W = Math.max(avail, n * 46 + 80, nPeaks * GAP + L + R + 30);
+  var bandB = 30, bandY = 62;
+  var maxLab = 0;
   var rnd = rng(seq.join(""));
   var peaks = [];
   C.b.forEach(function(m, i){ var it = i === 0 ? 8 + 12*rnd() : 28 + 52*rnd(); peaks.push({kind:"b", i:i+1, m:m, it:it}); });
   C.y.forEach(function(m, i){ var it = i === 0 ? 30 + 30*rnd() : 45 + 55*rnd(); peaks.push({kind:"y", i:i+1, m:m, it:it}); });
   peaks.push({kind:"p", i:0, m:C.MH, it:14 + 10*rnd()});
+  peaks.forEach(function(p){ p.lab = labelOf(p); maxLab = Math.max(maxLab, p.lab.length); });
+  var labTop = bandY + 16;                        // inizio della fascia delle etichette
+  var yLab = labTop + maxLab * 6.9 + 4;           // base comune delle etichette (il testo sale da qui)
+  var top = yLab + 34, base = top + 190, H = base + 42;
+  var mmax = Math.ceil(C.MH * 1.06 / 50) * 50;
+  var X = function(m){ return L + m / mmax * (W - L - R); };
+  var hmax = base - top;
   var itmax = Math.max.apply(null, peaks.map(function(p){ return p.it; }));
   peaks.forEach(function(p){ p.it = p.it / itmax * 100; p.x = X(p.m); p.yTop = base - hmax * p.it / 100; });
 
+  // posizione delle etichette: in ordine di massa, distanziate quanto basta
+  var byX = peaks.slice().sort(function(a, b){ return a.x - b.x; });
+  var left = L + 8, right = W - R - 8;
+  byX.forEach(function(p, k){ p.lx = Math.max(p.x, left, k ? byX[k-1].lx + GAP : left); });
+  if (byX.length && byX[byX.length - 1].lx > right){
+    byX[byX.length - 1].lx = right;
+    for (var k = byX.length - 2; k >= 0; k--) byX[k].lx = Math.min(byX[k].lx, byX[k+1].lx - GAP);
+  }
+
+  if (W > avail + 4) legend.innerHTML += '<span>↔ scorri lo spettro di lato</span>';
   var s = [];
   // asse
   var step = niceStep(mmax, W - L - R);
@@ -373,11 +405,10 @@ function renderSpectrum(C){
   s.push('<text transform="translate(12 ' + ((top + base)/2) + ') rotate(-90)" font-size="10.5" text-anchor="middle" fill="var(--muted)">intensità %</text>');
 
   // scale di lettura (de novo)
-  var bandB = 30, bandY = 62;
   function ladder(pos, letters, y, color, kind){
     for (var k = 0; k < letters.length; k++){
       var x1 = X(pos[k]), x2 = X(pos[k+1]), w = x2 - x1, cx = (x1 + x2) / 2;
-      var picked = state.sel && state.sel.kind === "r" && ((kind === "b" && state.sel.i === k) || (kind === "y" && state.sel.i === n - 1 - k));
+      var picked = sel && sel.kind === "r" && ((kind === "b" && sel.i === k) || (kind === "y" && sel.i === n - 1 - k));
       var col = picked ? "var(--amber)" : color;
       s.push('<g class="hit" data-r="' + (kind === "b" ? k : n - 1 - k) + '">');
       s.push('<rect x="' + x1 + '" y="' + (y - 20) + '" width="' + Math.max(w, 1) + '" height="26" fill="transparent"/>');
@@ -394,52 +425,30 @@ function renderSpectrum(C){
   s.push('<text x="' + (L - 8) + '" y="' + (bandB + 1) + '" font-size="10" text-anchor="end" fill="var(--b)">' + (state.expert ? "b" : "→") + '</text>');
   s.push('<text x="' + (L - 8) + '" y="' + (bandY + 1) + '" font-size="10" text-anchor="end" fill="var(--y)">' + (state.expert ? "y" : "←") + '</text>');
 
+  // tratti che legano ogni etichetta al suo picco
+  peaks.forEach(function(p){
+    var hot = isSel(p) || isRes(p);
+    var col = hot ? "var(--amber)" : colorOf(p);
+    var d = 'M' + p.lx + ' ' + (yLab + 3) + ' V' + (yLab + 9) + ' L' + p.x + ' ' + (yLab + 24) + ' V' + (p.yTop - 3);
+    s.push('<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + (hot ? 1.6 : 0.9) + '" opacity="' + (hot ? 1 : 0.5) + '"/>');
+  });
   // picchi
-  var sel = state.sel;
-  function isSel(p){ return sel && sel.kind === p.kind && sel.i === p.i; }
-  function isRes(p){
-    if (!sel || sel.kind !== "r") return false;
-    return (p.kind === "b" && (p.i === sel.i || p.i === sel.i + 1)) || (p.kind === "y" && (p.i === n - 1 - sel.i || p.i === n - sel.i));
-  }
   peaks.forEach(function(p){
-    var col = p.kind === "b" ? "var(--b)" : p.kind === "y" ? "var(--y)" : "var(--muted)";
     var w = isSel(p) ? 4 : isRes(p) ? 3.4 : 2.4;
-    if (isSel(p) || isRes(p)) s.push('<line x1="' + p.x + '" y1="' + (bandY + 4) + '" x2="' + p.x + '" y2="' + p.yTop + '" stroke="var(--amber)" stroke-width="1" stroke-dasharray="3 3"/>');
-    s.push('<line x1="' + p.x + '" y1="' + base + '" x2="' + p.x + '" y2="' + p.yTop + '" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="butt"/>');
+    s.push('<line x1="' + p.x + '" y1="' + base + '" x2="' + p.x + '" y2="' + p.yTop + '" stroke="' + colorOf(p) + '" stroke-width="' + w + '" stroke-linecap="butt"/>');
   });
-  // etichette senza sovrapposizioni
-  function labelOf(p){
-    if (p.kind === "p") return state.expert ? "[M+H]+" : "intero";
-    if (state.expert) return p.kind + p.i;
-    var frag = p.kind === "b" ? seq.slice(0, p.i).join("") : seq.slice(n - p.i).join("");
-    if (frag.length > 5) frag = p.kind === "b" ? frag.slice(0, 4) + "…" : "…" + frag.slice(-4);
-    return frag;
-  }
-  var order = peaks.slice().sort(function(a, b){
-    var sa = isSel(a) ? 2 : a.kind === "p" ? 1 : 0, sb = isSel(b) ? 2 : b.kind === "p" ? 1 : 0;
-    return sb - sa || b.it - a.it;
-  });
-  var boxes = [];
-  order.forEach(function(p){
-    var lab = labelOf(p), w = lab.length * 6.9 + 4, placed = null;
-    for (var tier = 0; tier < 3 && !placed; tier++){
-      var yb = p.yTop - 6 - tier * 13;
-      if (yb - 11 < bandY + 8) break;
-      var bx = {x1:p.x - w/2, x2:p.x + w/2, y1:yb - 11, y2:yb + 1};
-      var clash = boxes.some(function(o){ return !(bx.x2 < o.x1 || bx.x1 > o.x2 || bx.y2 < o.y1 || bx.y1 > o.y2); });
-      if (!clash) placed = bx;
-    }
-    if (placed){
-      boxes.push(placed);
-      var col = p.kind === "b" ? "var(--b)" : p.kind === "y" ? "var(--y)" : "var(--muted)";
-      s.push('<text x="' + p.x + '" y="' + (placed.y2 - 1) + '" font-size="11" font-weight="' + (isSel(p) ? 700 : 500) + '" text-anchor="middle" fill="' + col + '">' + esc(lab) + '</text>');
-    }
-  });
-  // aree di tocco dei picchi
+  // etichette verticali complete
   peaks.forEach(function(p){
-    s.push('<rect class="hit" data-kind="' + p.kind + '" data-i="' + p.i + '" x="' + (p.x - 8) + '" y="' + (bandY + 10) + '" width="16" height="' + (base - bandY - 10) + '" fill="transparent"/>');
+    var hot = isSel(p) || isRes(p);
+    s.push('<text transform="translate(' + p.lx + ' ' + yLab + ') rotate(-90)" x="0" y="4" font-size="11" font-weight="' + (hot ? 700 : 500) + '" fill="' + (hot ? "var(--ink)" : colorOf(p)) + '">' + esc(p.lab) + '</text>');
   });
-
+  // aree di tocco: sul picco e sulla sua etichetta
+  peaks.forEach(function(p){
+    var lw = p.lab.length * 6.9 + 6;
+    s.push('<g class="hit" data-kind="' + p.kind + '" data-i="' + p.i + '">' +
+      '<rect x="' + (p.x - 8) + '" y="' + (yLab + 10) + '" width="16" height="' + (base - yLab - 10) + '" fill="transparent"/>' +
+      '<rect x="' + (p.lx - 7) + '" y="' + (yLab - lw) + '" width="14" height="' + (lw + 10) + '" fill="transparent"/></g>');
+  });
   svg.setAttribute("width", W); svg.setAttribute("height", H);
   svg.setAttribute("viewBox", "0 0 " + W + " " + H);
   svg.innerHTML = s.join("");

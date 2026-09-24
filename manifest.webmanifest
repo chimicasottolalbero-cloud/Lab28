@@ -1,0 +1,15 @@
+{
+  "name": "Il tuo nome è un peptide",
+  "short_name": "Peptide",
+  "description": "Ogni lettera del tuo nome diventa un amminoacido: massa e spettro di massa simulato.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EDF1F4",
+  "theme_color": "#14202B",
+  "icons": [
+    {"src": "icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

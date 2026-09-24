@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Il tuo nome è un peptide</title>
+<meta name="description" content="Scrivi il tuo nome: ogni lettera diventa un amminoacido. Scopri quanto pesa il tuo peptide e come lo legge uno spettrometro di massa.">
+<meta name="theme-color" content="#14202B">
+<meta property="og:title" content="Il tuo nome è un peptide">
+<meta property="og:description" content="Scrivi il tuo nome: ogni lettera diventa un amminoacido. Scopri quanto pesa il tuo peptide e come lo legge uno spettrometro di massa.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icona-192.png">
+<link rel="apple-touch-icon" href="icona-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Peptide">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#EDF1F4; --surface:#FFFFFF; --ink:#14202B; --muted:#56646F; --line:#D3DBE1;
+  --b:#1F5FA8; --b-soft:#DCE8F6; --y:#C23B4A; --y-soft:#F7DFE2;
+  --amber:#D9950B; --amber-soft:#FBEFD2; --ghost:#9AA6B0;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0D141A; --surface:#152029; --ink:#E3EAF0; --muted:#95A3AF; --line:#27353F;
+    --b:#72AAEC; --b-soft:#1B3048; --y:#F17D89; --y-soft:#3E2127;
+    --amber:#F2B53A; --amber-soft:#3A2F14; --ghost:#5F6E79;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0D141A; --surface:#152029; --ink:#E3EAF0; --muted:#95A3AF; --line:#27353F;
+  --b:#72AAEC; --b-soft:#1B3048; --y:#F17D89; --y-soft:#3E2127;
+  --amber:#F2B53A; --amber-soft:#3A2F14; --ghost:#5F6E79;
+}
+*{box-sizing:border-box}
+html,body{background:var(--paper)}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:flex;flex-direction:column;gap:22px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(30px,7.2vw,46px);line-height:1.02;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--b)}
+h2{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;margin:0}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none;padding:6px 2px}
+.switch input{appearance:none;width:40px;height:23px;border-radius:12px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .2s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s}
+.switch input:checked{background:var(--b)}
+.switch input:checked::after{transform:translateX(17px)}
+.switch input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+.entry{display:flex;flex-direction:column;gap:10px}
+.entry label{font-size:15px;color:var(--muted)}
+#nome{font-family:var(--display);font-weight:700;font-size:clamp(26px,6vw,34px);letter-spacing:.01em;width:100%;padding:12px 16px;border:2px solid var(--ink);border-radius:14px;background:var(--surface);color:var(--ink);outline:none}
+#nome:focus-visible{border-color:var(--b);box-shadow:0 0 0 4px var(--b-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips span{font-size:13px;color:var(--muted)}
+.chips button{font:500 14px var(--body);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chips button:hover,.chips button:focus-visible{border-color:var(--ink);outline:none}
+
+.chain{display:flex;flex-wrap:wrap;gap:14px 16px;overflow:hidden;padding:6px 2px 2px}
+.bead{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;color:inherit;cursor:pointer;font:inherit}
+.bead + .bead::before{content:"";position:absolute;left:-17px;top:26px;width:18px;height:3px;background:var(--ink);border-radius:2px}
+.bead .ball{width:54px;height:54px;border-radius:50%;border:2.5px solid var(--ink);background:var(--surface);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:25px;line-height:1;transition:background .15s,border-color .15s,transform .15s}
+.bead .cap{font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.25;text-align:center}
+.bead .cap b{display:block;font-weight:500;color:var(--ink)}
+.bead.ghost .ball{border-style:dashed;border-color:var(--ghost);color:var(--ghost);background:transparent}
+.bead.ghost + .bead::before,.bead + .bead.ghost::before{background:var(--ghost);opacity:.6}
+.bead.in-b .ball{background:var(--b-soft);border-color:var(--b)}
+.bead.in-y .ball{background:var(--y-soft);border-color:var(--y)}
+.bead.pick .ball{background:var(--amber-soft);border-color:var(--amber);transform:translateY(-3px)}
+.bead:focus-visible{outline:none}
+.bead:focus-visible .ball{box-shadow:0 0 0 3px var(--amber)}
+
+.mass{display:grid;grid-template-columns:1fr;gap:6px}
+.mass .k{font-size:15px;color:var(--muted)}
+.mass .v{font-family:var(--display);font-weight:800;font-size:clamp(40px,11vw,64px);line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mass .v small{font-size:.42em;font-weight:700;margin-left:.2em;color:var(--muted);letter-spacing:0}
+.mass .sub{font-size:14.5px;color:var(--muted);max-width:60ch}
+.formula{font-family:var(--mono);font-size:15px}
+.expert-only{display:none}
+body.expert .expert-only{display:revert}
+.ions{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--mono);font-size:13.5px;color:var(--muted)}
+.ions b{color:var(--ink);font-weight:500}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.scroller{overflow-x:auto;margin-inline:-6px;padding-inline:6px}
+#spettro{display:block}
+#spettro text{font-family:var(--mono)}
+#spettro .hit{cursor:pointer}
+.info{min-height:48px;border-radius:10px;background:var(--paper);padding:10px 12px;font-size:14.5px}
+.info .seq{font-family:var(--mono);font-weight:600;letter-spacing:.06em}
+.info .tb{color:var(--b);font-weight:600}
+.info .ty{color:var(--y);font-weight:600}
+.note{font-size:12.5px;color:var(--muted)}
+
+.facts{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.facts li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;font-size:15px}
+.facts .tag{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;background:var(--amber-soft);color:var(--ink);border:2px solid var(--amber)}
+.facts .num{font-family:var(--mono);font-size:13.5px;word-break:break-all}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:flex;flex-direction:column;gap:6px;font-size:14.5px}
+.steps li::before{content:counter(s);font-family:var(--display);font-weight:800;font-size:28px;line-height:1;color:var(--b)}
+.steps strong{font-family:var(--display);font-size:16px}
+@media (max-width:620px){.steps{grid-template-columns:1fr}}
+
+table.frag{border-collapse:collapse;font-family:var(--mono);font-size:13px;width:100%;font-variant-numeric:tabular-nums}
+table.frag th{font-weight:500;color:var(--muted);text-align:right;padding:4px 8px;border-bottom:1px solid var(--line)}
+table.frag td{text-align:right;padding:3px 8px;border-bottom:1px solid var(--line)}
+table.frag td.aa{text-align:center;font-weight:600;color:var(--ink)}
+table.frag .cb{color:var(--b)} table.frag .cy{color:var(--y)}
+
+.qr{display:none;gap:16px;align-items:center}
+.qr.on{display:flex}
+.qr canvas,.qr img{width:132px;height:132px;background:#fff;padding:8px;border-radius:10px;image-rendering:pixelated}
+footer{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:14px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Notte Europea dei Ricercatori · spettrometria di massa</p>
+      <h1>Il tuo nome è un <em>peptide</em></h1>
+    </div>
+    <label class="switch" for="esperto"><input type="checkbox" id="esperto"> Per esperti</label>
+  </header>
+
+  <section class="entry">
+    <label for="nome">Scrivi il tuo nome: ogni lettera diventa un amminoacido.</label>
+    <input id="nome" type="text" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" value="Sofia">
+    <div class="chips" id="esempi"><span>Prova:</span></div>
+  </section>
+
+  <section class="chain" id="catena" aria-label="La catena di amminoacidi"></section>
+
+  <section class="mass" id="massa"></section>
+
+  <section class="panel">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <h2>Lo spettrometro rompe il tuo peptide</h2>
+      <p class="note" style="margin:0" id="spiega"></p>
+    </div>
+    <div class="legend" id="legenda"></div>
+    <div class="scroller"><svg id="spettro" role="img" aria-label="Spettro di massa simulato del peptide"></svg></div>
+    <div class="info" id="info"></div>
+    <div class="expert-only scroller"><table class="frag" id="tabella"></table></div>
+  </section>
+
+  <section class="panel">
+    <h2>Lo sapevi?</h2>
+    <ul class="facts" id="fatti"></ul>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Come funziona</h2>
+    <ol class="steps">
+      <li><strong>Una collana</strong>Le proteine sono collane di amminoacidi. Ognuno ha una lettera: il tuo nome è una collana corta, cioè un peptide.</li>
+      <li><strong>Pesare e rompere</strong>Lo spettrometro di massa pesa le molecole con precisione enorme, fino alla quarta cifra decimale, e può spezzarle in pezzi.</li>
+      <li><strong>Leggere i pezzi</strong>La differenza di peso fra due pezzi vicini è il peso di una lettera. Così si leggono le proteine vere, lettera per lettera.</li>
+    </ol>
+  </section>
+
+  <section class="panel qr" id="qr">
+    <div id="qrimg"></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h2>Portalo sul tuo telefono</h2>
+      <p style="margin:0;font-size:14.5px">Inquadra il codice con la fotocamera. Dal menu del browser puoi scegliere <b>Aggiungi a schermata Home</b>: diventa un'app e funziona anche senza rete.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Spettro simulato: le masse sono calcolate in modo esatto, le altezze dei picchi sono inventate dal programma.</span>
+    <span class="expert-only">Masse monoisotopiche; frammenti b e y a carica singola; 1 Da = 1,66054 × 10<sup>−24</sup> g.</span>
+    <span>Notte Europea dei Ricercatori 2026</span>
+  </footer>
+</div>
+
+<script src="qrcode.js"></script>
+<script>
+(function(){
+"use strict";
+var ATOM = {C:12.0, H:1.00782503207, N:14.0030740048, O:15.99491461956, S:31.97207100, Se:79.9165213};
+var PROTON = 1.00727646688;
+var WATER = 2*ATOM.H + ATOM.O;
+var DA_G = 1.66053906660e-24, AVOGADRO = 6.02214076e23;
+
+var AA = {
+ G:["Glicina","Gly",{C:2,H:3,N:1,O:1},"La più piccola di tutte. Nel collagene, la proteina di pelle e tendini, un amminoacido su tre è glicina."],
+ A:["Alanina","Ala",{C:3,H:5,N:1,O:1},"Una delle più semplici e delle più diffuse nelle proteine."],
+ S:["Serina","Ser",{C:3,H:5,N:1,O:2},"Il nome viene da sericum, seta: fu isolata la prima volta dalla seta."],
+ P:["Prolina","Pro",{C:5,H:7,N:1,O:1},"L'unica con l'azoto chiuso in un anello: dove c'è lei, la catena della proteina si piega."],
+ V:["Valina","Val",{C:5,H:9,N:1,O:1},"Uno dei nove amminoacidi essenziali: il corpo non la produce, la prendiamo dal cibo."],
+ T:["Treonina","Thr",{C:4,H:7,N:1,O:2},"L'ultima dei venti amminoacidi comuni a essere scoperta, nel 1935."],
+ C:["Cisteina","Cys",{C:3,H:5,N:1,O:1,S:1},"Contiene zolfo. I ponti fra due cisteine tengono insieme la cheratina dei capelli."],
+ L:["Leucina","Leu",{C:6,H:11,N:1,O:1},"Dal greco leukós, bianco, per i suoi cristalli. Pesa esattamente come l'isoleucina."],
+ I:["Isoleucina","Ile",{C:6,H:11,N:1,O:1},"Stessi atomi della leucina, messi in un altro ordine: per questo pesano uguale."],
+ N:["Asparagina","Asn",{C:4,H:6,N:2,O:2},"Il primo amminoacido mai scoperto, nel 1806, dal succo di asparagi."],
+ D:["Acido aspartico","Asp",{C:4,H:5,N:1,O:3},"È uno dei due mattoncini dell'aspartame, il dolcificante."],
+ Q:["Glutammina","Gln",{C:5,H:8,N:2,O:2},"L'amminoacido libero più abbondante nel sangue."],
+ K:["Lisina","Lys",{C:6,H:12,N:2,O:1},"Essenziale. I cereali ne hanno poca, i legumi molta: per questo pasta e fagioli si completano."],
+ E:["Acido glutammico","Glu",{C:5,H:7,N:1,O:3},"È il gusto umami: il glutammato del parmigiano e del pomodoro maturo."],
+ M:["Metionina","Met",{C:5,H:9,N:1,O:1,S:1},"Quasi tutte le proteine vengono costruite partendo da lei: è il segnale di via."],
+ H:["Istidina","His",{C:6,H:7,N:3,O:1},"Nel pesce conservato male si trasforma in istamina, che può dare reazioni simili a un'allergia."],
+ F:["Fenilalanina","Phe",{C:9,H:9,N:1,O:1},"Per questo sulle bibite con aspartame c'è scritto: contiene una fonte di fenilalanina."],
+ R:["Arginina","Arg",{C:6,H:12,N:4,O:1},"Il corpo la usa per produrre ossido nitrico, che fa dilatare i vasi sanguigni."],
+ Y:["Tirosina","Tyr",{C:9,H:9,N:1,O:2},"Dal greco tyrós, formaggio: fu scoperta nella caseina del latte."],
+ W:["Triptofano","Trp",{C:11,H:10,N:2,O:1},"Il più grande dei venti comuni. Da lui il corpo produce la serotonina."],
+ U:["Selenocisteina","Sec",{C:3,H:5,N:1,O:1,Se:1},"Il 21° amminoacido: al posto dello zolfo ha un atomo di selenio. Anche noi lo usiamo, in poche proteine."],
+ O:["Pirrolisina","Pyl",{C:12,H:19,N:3,O:2},"Il 22° amminoacido: esiste davvero, ma solo in alcuni microrganismi, come quelli che producono metano."]
+};
+var NOTAA = {B:"N oppure D", J:"I oppure L", X:"un amminoacido qualsiasi", Z:"Q oppure E"};
+Object.keys(AA).forEach(function(k){
+  var f = AA[k][2], m = 0; for (var el in f) m += ATOM[el]*f[el];
+  AA[k] = {name:AA[k][0], code:AA[k][1], f:f, fact:AA[k][3], m:m};
+});
+
+var EXAMPLES = ["Maria","Luca","Giovanni","Ilaria","Tommaso","Chiara","Elisa"];
+
+var $ = function(id){ return document.getElementById(id); };
+var state = {chars:[], seq:[], sel:null, expert:false};
+
+function fmt(x, d){ return x.toFixed(d).replace(".", ","); }
+function fmtMz(x){ return state.expert ? x.toFixed(4) : fmt(x, 1); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function sameMass(r){ return r === "I" || r === "L"; }
+function readAs(r){ return sameMass(r) ? "I/L" : r; }
+
+function parse(raw){
+  var clean = raw.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+  var chars = [];
+  for (var i = 0; i < clean.length; i++){
+    var ch = clean[i];
+    if (ch >= "A" && ch <= "Z") chars.push({ch:ch, ok:!!AA[ch], k:-1});
+  }
+  var seq = [];
+  chars.forEach(function(c){ if (c.ok){ c.k = seq.length; seq.push(c.ch); } });
+  return {chars:chars, seq:seq};
+}
+
+function compute(seq){
+  var n = seq.length, res = seq.map(function(r){ return AA[r].m; });
+  var sum = res.reduce(function(a,b){ return a+b; }, 0);
+  var M = n ? sum + WATER : 0, MH = M + PROTON;
+  var b = [], y = [], acc = 0;
+  for (var i = 1; i < n; i++){ acc += res[i-1]; b.push(acc + PROTON); }
+  acc = 0;
+  for (var j = 1; j < n; j++){ acc += res[n-j]; y.push(acc + WATER + PROTON); }
+  var f = {C:0,H:0,N:0,O:0,S:0,Se:0};
+  seq.forEach(function(r){ var g = AA[r].f; for (var el in g) f[el] += g[el]; });
+  if (n){ f.H += 2; f.O += 1; }
+  return {n:n, res:res, M:M, MH:MH, b:b, y:y, f:f};
+}
+
+// generatore pseudocasuale deterministico: stesso nome, stesso spettro
+function rng(seedStr){
+  var h = 2166136261;
+  for (var i = 0; i < seedStr.length; i++){ h ^= seedStr.charCodeAt(i); h = Math.imul(h, 16777619); }
+  var a = h >>> 0;
+  return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+
+function formulaHTML(f){
+  var out = "";
+  ["C","H","N","O","S","Se"].forEach(function(el){
+    if (f[el] > 0) out += el + (f[el] > 1 ? "<sub>" + f[el] + "</sub>" : "");
+  });
+  return out;
+}
+
+function zerosString(g){
+  var e = Math.floor(Math.log10(g));
+  var mant = Math.round(g / Math.pow(10, e) * 1000);
+  if (mant >= 10000){ mant = Math.round(mant/10); e += 1; }
+  var z = -e - 1;
+  return {text:"0," + "0".repeat(z) + String(mant), zeros:z};
+}
+
+/* ---------- catena ---------- */
+function renderChain(){
+  var el = $("catena"), sel = state.sel, n = state.seq.length;
+  if (!state.chars.length){ el.innerHTML = '<p class="note" style="margin:0">Scrivi almeno una lettera.</p>'; return; }
+  el.innerHTML = state.chars.map(function(c, idx){
+    if (!c.ok){
+      return '<button class="bead ghost" type="button" data-ghost="' + c.ch + '" aria-label="' + c.ch + ': non è un amminoacido"><span class="ball">' + c.ch + '</span><span class="cap"><b>salta</b>non è un<br>amminoacido</span></button>';
+    }
+    var a = AA[c.ch], cls = "bead";
+    if (sel){
+      if (sel.kind === "b" && c.k < sel.i) cls += " in-b";
+      if (sel.kind === "y" && c.k >= n - sel.i) cls += " in-y";
+      if (sel.kind === "r" && c.k === sel.i) cls += " pick";
+    }
+    var cap = '<b>' + a.code + '</b>' + (state.expert ? a.m.toFixed(4) : fmt(a.m, 1));
+    return '<button class="' + cls + '" type="button" data-k="' + c.k + '" aria-label="' + c.ch + ', ' + a.name + '"><span class="ball">' + c.ch + '</span><span class="cap">' + cap + '</span></button>';
+  }).join("");
+}
+
+/* ---------- massa ---------- */
+function renderMass(C){
+  var el = $("massa");
+  if (!C.n){ el.innerHTML = '<span class="k">Nessuna lettera del tuo nome è un amminoacido. Prova con un altro nome!</span>'; return; }
+  var d = state.expert ? 4 : 2;
+  var html = '<span class="k">Il tuo peptide pesa</span>' +
+    '<span class="v">' + fmt(C.M, d) + '<small>Da</small></span>' +
+    '<span class="sub">Un dalton (Da) è circa la massa di un atomo di idrogeno. Il tuo peptide è fatto di ' + C.n + (C.n === 1 ? ' amminoacido' : ' amminoacidi') + '.</span>' +
+    '<div class="expert-only"><div class="ions"><span>formula <b class="formula">' + formulaHTML(C.f) + '</b></span>' +
+    '<span>[M+H]<sup>+</sup> <b>' + C.MH.toFixed(4) + '</b></span>' +
+    '<span>[M+2H]<sup>2+</sup> <b>' + ((C.M + 2*PROTON)/2).toFixed(4) + '</b></span></div></div>';
+  el.innerHTML = html;
+}
+
+/* ---------- spettro ---------- */
+function niceStep(range, px){
+  var steps = [10,20,25,50,100,200,250,500,1000,2000];
+  for (var i = 0; i < steps.length; i++){ if (px * steps[i] / range >= 58) return steps[i]; }
+  return 5000;
+}
+
+function renderSpectrum(C){
+  var svg = $("spettro"), sc = svg.parentNode;
+  var legend = $("legenda"), expl = $("spiega");
+  if (C.n < 2){
+    svg.setAttribute("width", 10); svg.setAttribute("height", 10); svg.innerHTML = "";
+    legend.innerHTML = "";
+    expl.textContent = "Servono almeno due amminoacidi per avere dei pezzi.";
+    renderInfo(C);
+    return;
+  }
+  expl.textContent = state.expert
+    ? "Spettro MS/MS simulato del catione [M+H]+: serie b in blu, serie y in rosso. Sopra, la lettura de novo delle due serie."
+    : "Il peptide si spezza in tanti punti. I pezzi blu contengono l'inizio del nome, quelli rossi la fine. Ogni picco è un pezzo, e più è a destra più pesa.";
+  legend.innerHTML = state.expert
+    ? '<span><i style="background:var(--b)"></i>ioni b</span><span><i style="background:var(--y)"></i>ioni y</span><span><i style="background:var(--muted)"></i>precursore [M+H]<sup>+</sup></span>'
+    : '<span><i style="background:var(--b)"></i>pezzi con l\'inizio del nome</span><span><i style="background:var(--y)"></i>pezzi con la fine del nome</span><span><i style="background:var(--muted)"></i>molecola intera</span>';
+
+  var n = C.n, seq = state.seq;
+  var avail = Math.max(300, sc.clientWidth || 700);
+  var W = Math.max(avail, n * 46 + 80), H = 330;
+  var L = 44, R = 18, top = 84, base = H - 42;
+  var mmax = Math.ceil(C.MH * 1.06 / 50) * 50;
+  var X = function(m){ return L + m / mmax * (W - L - R); };
+  var hmax = base - top - 26;
+  var rnd = rng(seq.join(""));
+  var peaks = [];
+  C.b.forEach(function(m, i){ var it = i === 0 ? 8 + 12*rnd() : 28 + 52*rnd(); peaks.push({kind:"b", i:i+1, m:m, it:it}); });
+  C.y.forEach(function(m, i){ var it = i === 0 ? 30 + 30*rnd() : 45 + 55*rnd(); peaks.push({kind:"y", i:i+1, m:m, it:it}); });
+  peaks.push({kind:"p", i:0, m:C.MH, it:14 + 10*rnd()});
+  var itmax = Math.max.apply(null, peaks.map(function(p){ return p.it; }));
+  peaks.forEach(function(p){ p.it = p.it / itmax * 100; p.x = X(p.m); p.yTop = base - hmax * p.it / 100; });
+
+  var s = [];
+  // asse
+  var step = niceStep(mmax, W - L - R);
+  s.push('<line x1="' + L + '" y1="' + base + '" x2="' + (W - R) + '" y2="' + base + '" stroke="var(--ink)" stroke-width="1.2"/>');
+  for (var t = 0; t <= mmax; t += step){
+    var tx = X(t);
+    s.push('<line x1="' + tx + '" y1="' + base + '" x2="' + tx + '" y2="' + (base + 5) + '" stroke="var(--ink)" stroke-width="1"/>');
+    s.push('<text x="' + tx + '" y="' + (base + 18) + '" font-size="11" text-anchor="middle" fill="var(--muted)">' + t + '</text>');
+  }
+  s.push('<text x="' + (W - R) + '" y="' + (base + 34) + '" font-size="11.5" text-anchor="end" fill="var(--muted)">' + (state.expert ? "m/z" : "peso del pezzo (Da)") + '</text>');
+  s.push('<line x1="' + L + '" y1="' + top + '" x2="' + L + '" y2="' + base + '" stroke="var(--line)" stroke-width="1"/>');
+  s.push('<text x="' + (L - 8) + '" y="' + (top + 4) + '" font-size="10.5" text-anchor="end" fill="var(--muted)">100</text>');
+  s.push('<text x="' + (L - 8) + '" y="' + (base) + '" font-size="10.5" text-anchor="end" fill="var(--muted)">0</text>');
+  s.push('<text transform="translate(12 ' + ((top + base)/2) + ') rotate(-90)" font-size="10.5" text-anchor="middle" fill="var(--muted)">intensità %</text>');
+
+  // scale di lettura (de novo)
+  var bandB = 30, bandY = 62;
+  function ladder(pos, letters, y, color, kind){
+    for (var k = 0; k < letters.length; k++){
+      var x1 = X(pos[k]), x2 = X(pos[k+1]), w = x2 - x1, cx = (x1 + x2) / 2;
+      var picked = state.sel && state.sel.kind === "r" && ((kind === "b" && state.sel.i === k) || (kind === "y" && state.sel.i === n - 1 - k));
+      var col = picked ? "var(--amber)" : color;
+      s.push('<g class="hit" data-r="' + (kind === "b" ? k : n - 1 - k) + '">');
+      s.push('<rect x="' + x1 + '" y="' + (y - 20) + '" width="' + Math.max(w, 1) + '" height="26" fill="transparent"/>');
+      s.push('<path d="M' + (x1 + 1.5) + ' ' + (y - 4) + ' V' + y + ' H' + (x2 - 1.5) + ' V' + (y - 4) + '" fill="none" stroke="' + col + '" stroke-width="' + (picked ? 2.4 : 1.5) + '"/>');
+      var lab = readAs(letters[k]);
+      if (w >= lab.length * 7.5 + 2) s.push('<text x="' + cx + '" y="' + (y - 7) + '" font-size="12" font-weight="700" text-anchor="middle" fill="' + col + '">' + lab + '</text>');
+      s.push('</g>');
+    }
+  }
+  var posB = [PROTON].concat(C.b).concat([C.MH - WATER]);
+  var posY = [WATER + PROTON].concat(C.y).concat([C.MH]);
+  ladder(posB, seq, bandB, "var(--b)", "b");
+  ladder(posY, seq.slice().reverse(), bandY, "var(--y)", "y");
+  s.push('<text x="' + (L - 8) + '" y="' + (bandB + 1) + '" font-size="10" text-anchor="end" fill="var(--b)">' + (state.expert ? "b" : "→") + '</text>');
+  s.push('<text x="' + (L - 8) + '" y="' + (bandY + 1) + '" font-size="10" text-anchor="end" fill="var(--y)">' + (state.expert ? "y" : "←") + '</text>');
+
+  // picchi
+  var sel = state.sel;
+  function isSel(p){ return sel && sel.kind === p.kind && sel.i === p.i; }
+  function isRes(p){
+    if (!sel || sel.kind !== "r") return false;
+    return (p.kind === "b" && (p.i === sel.i || p.i === sel.i + 1)) || (p.kind === "y" && (p.i === n - 1 - sel.i || p.i === n - sel.i));
+  }
+  peaks.forEach(function(p){
+    var col = p.kind === "b" ? "var(--b)" : p.kind === "y" ? "var(--y)" : "var(--muted)";
+    var w = isSel(p) ? 4 : isRes(p) ? 3.4 : 2.4;
+    if (isSel(p) || isRes(p)) s.push('<line x1="' + p.x + '" y1="' + (bandY + 4) + '" x2="' + p.x + '" y2="' + p.yTop + '" stroke="var(--amber)" stroke-width="1" stroke-dasharray="3 3"/>');
+    s.push('<line x1="' + p.x + '" y1="' + base + '" x2="' + p.x + '" y2="' + p.yTop + '" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="butt"/>');
+  });
+  // etichette senza sovrapposizioni
+  function labelOf(p){
+    if (p.kind === "p") return state.expert ? "[M+H]+" : "intero";
+    if (state.expert) return p.kind + p.i;
+    var frag = p.kind === "b" ? seq.slice(0, p.i).join("") : seq.slice(n - p.i).join("");
+    if (frag.length > 5) frag = p.kind === "b" ? frag.slice(0, 4) + "…" : "…" + frag.slice(-4);
+    return frag;
+  }
+  var order = peaks.slice().sort(function(a, b){
+    var sa = isSel(a) ? 2 : a.kind === "p" ? 1 : 0, sb = isSel(b) ? 2 : b.kind === "p" ? 1 : 0;
+    return sb - sa || b.it - a.it;
+  });
+  var boxes = [];
+  order.forEach(function(p){
+    var lab = labelOf(p), w = lab.length * 6.9 + 4, placed = null;
+    for (var tier = 0; tier < 3 && !placed; tier++){
+      var yb = p.yTop - 6 - tier * 13;
+      if (yb - 11 < bandY + 8) break;
+      var bx = {x1:p.x - w/2, x2:p.x + w/2, y1:yb - 11, y2:yb + 1};
+      var clash = boxes.some(function(o){ return !(bx.x2 < o.x1 || bx.x1 > o.x2 || bx.y2 < o.y1 || bx.y1 > o.y2); });
+      if (!clash) placed = bx;
+    }
+    if (placed){
+      boxes.push(placed);
+      var col = p.kind === "b" ? "var(--b)" : p.kind === "y" ? "var(--y)" : "var(--muted)";
+      s.push('<text x="' + p.x + '" y="' + (placed.y2 - 1) + '" font-size="11" font-weight="' + (isSel(p) ? 700 : 500) + '" text-anchor="middle" fill="' + col + '">' + esc(lab) + '</text>');
+    }
+  });
+  // aree di tocco dei picchi
+  peaks.forEach(function(p){
+    s.push('<rect class="hit" data-kind="' + p.kind + '" data-i="' + p.i + '" x="' + (p.x - 8) + '" y="' + (bandY + 10) + '" width="16" height="' + (base - bandY - 10) + '" fill="transparent"/>');
+  });
+
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.innerHTML = s.join("");
+  renderInfo(C);
+}
+
+function renderInfo(C){
+  var el = $("info"), sel = state.sel, seq = state.seq, n = C.n;
+  if (!sel || n < 2){
+    el.innerHTML = n < 2 ? "" : (state.expert
+      ? "Tocca un picco per vedere il frammento, oppure un tratto delle scale in alto per vedere quale residuo corrisponde a quella differenza di massa."
+      : "Tocca un picco per vedere che pezzo del nome è, oppure tocca una lettera.");
+    return;
+  }
+  if (sel.kind === "b" || sel.kind === "y"){
+    var isB = sel.kind === "b";
+    var frag = isB ? seq.slice(0, sel.i) : seq.slice(n - sel.i);
+    var m = isB ? C.b[sel.i - 1] : C.y[sel.i - 1];
+    el.innerHTML = state.expert
+      ? '<span class="' + (isB ? "tb" : "ty") + '">' + sel.kind + sel.i + '</span> · <span class="seq">' + frag.join("") + '</span> · m/z ' + m.toFixed(4)
+      : 'Questo pezzo contiene <span class="seq ' + (isB ? "tb" : "ty") + '">' + frag.join("") + '</span>, ' + (isB ? "l'inizio" : "la fine") + ' del nome, e pesa ' + fmt(m, 1) + ' Da.';
+    return;
+  }
+  if (sel.kind === "p"){
+    el.innerHTML = state.expert ? 'Precursore [M+H]<sup>+</sup> · m/z ' + C.MH.toFixed(4) : "Questo è il peptide intero, con un protone in più: è così che lo spettrometro lo vede.";
+    return;
+  }
+  if (sel.kind === "r"){
+    var r = seq[sel.i], a = AA[r];
+    var extra = sameMass(r) ? " Per questo nello spettro non si può dire se in quel punto c'è una I o una L." : "";
+    el.innerHTML = '<b>' + r + ' · ' + a.name + '</b> (' + (state.expert ? a.m.toFixed(4) : fmt(a.m, 2)) + ' Da). ' + a.fact + extra;
+  }
+}
+
+/* ---------- tabella per esperti ---------- */
+function renderTable(C){
+  var t = $("tabella");
+  if (C.n < 2){ t.innerHTML = ""; return; }
+  var n = C.n, rows = ['<tr><th>#</th><th class="cb">b</th><th>aa</th><th class="cy">y</th><th>#</th></tr>'];
+  for (var i = 1; i <= n; i++){
+    var b = i < n ? C.b[i-1].toFixed(4) : "";
+    var yi = n - i + 1, y = yi < n ? C.y[yi-1].toFixed(4) : "";
+    rows.push('<tr><td>' + i + '</td><td class="cb">' + b + '</td><td class="aa">' + state.seq[i-1] + '</td><td class="cy">' + y + '</td><td>' + (n - i + 1) + '</td></tr>');
+  }
+  t.innerHTML = rows.join("");
+}
+
+/* ---------- curiosità ---------- */
+function renderFacts(C){
+  var li = [];
+  var chars = state.chars, seq = state.seq;
+  if (C.n){
+    var g = C.M * DA_G, z = zerosString(g);
+    li.push(['g', 'In grammi il tuo peptide pesa <span class="num">' + z.text + ' g</span>: dopo la virgola ci sono ' + z.zeros + ' zeri.']);
+    var perG = AVOGADRO / C.M / 1e18;
+    li.push(['1 g', 'In un solo grammo ci starebbero circa ' + Math.round(perG).toLocaleString("it-IT") + ' miliardi di miliardi di copie del tuo peptide.']);
+    var heavy = seq.slice().sort(function(a,b){ return AA[b].m - AA[a].m; });
+    var hv = heavy[0], lt = heavy[heavy.length - 1];
+    if (hv !== lt) li.push(['Da', 'La lettera più pesante del tuo nome è la ' + hv + ', ' + AA[hv].name.toLowerCase() + ' (' + fmt(AA[hv].m, 1) + ' Da); la più leggera è la ' + lt + ', ' + AA[lt].name.toLowerCase() + ' (' + fmt(AA[lt].m, 1) + ' Da).']);
+  }
+  if (seq.indexOf("I") >= 0 || seq.indexOf("L") >= 0) li.push(['I/L', 'La I e la L pesano esattamente uguale, ' + AA.I.m.toFixed(4) + ' Da. Lo spettrometro legge l\'ordine delle lettere, ma in quel punto non sa dire se c\'è una I o una L: guarda le scale sopra lo spettro.']);
+  if (seq.indexOf("O") >= 0) li.push(['O', AA.O.fact]);
+  if (seq.indexOf("U") >= 0) li.push(['U', AA.U.fact]);
+  var skipped = []; chars.forEach(function(c){ if (!c.ok && skipped.indexOf(c.ch) < 0) skipped.push(c.ch); });
+  if (skipped.length){
+    li.push([skipped.join(""), 'Nel codice delle proteine ' + skipped.join(", ") + (skipped.length > 1 ? " esistono, ma vogliono" : " esiste, ma vuol") + ' dire "non lo so": ' + skipped.map(function(s){ return s + " sta per " + NOTAA[s]; }).join("; ") + '. Per questo le abbiamo saltate.']);
+  }
+  $("fatti").innerHTML = li.map(function(x){ return '<li><span class="tag">' + x[0] + '</span><span>' + x[1] + '</span></li>'; }).join("");
+}
+
+/* ---------- ciclo principale ---------- */
+var C = null;
+function update(keepSel){
+  var p = parse($("nome").value);
+  state.chars = p.chars; state.seq = p.seq;
+  if (!keepSel) state.sel = null;
+  C = compute(state.seq);
+  renderChain(); renderMass(C); renderSpectrum(C); renderTable(C); renderFacts(C);
+}
+function redrawSel(){ renderChain(); renderSpectrum(C); }
+
+function setExpert(on){
+  state.expert = on;
+  document.body.classList.toggle("expert", on);
+  try { localStorage.setItem("peptide-esperto", on ? "1" : "0"); } catch(e){}
+  update(true);
+}
+
+$("nome").addEventListener("input", function(){ update(false); });
+$("esperto").addEventListener("change", function(e){ setExpert(e.target.checked); });
+
+$("catena").addEventListener("click", function(e){
+  var b = e.target.closest(".bead"); if (!b || b.dataset.k === undefined) return;
+  var k = +b.dataset.k;
+  state.sel = (state.sel && state.sel.kind === "r" && state.sel.i === k) ? null : {kind:"r", i:k};
+  redrawSel();
+});
+$("spettro").addEventListener("click", function(e){
+  var h = e.target.closest(".hit"); if (!h) return;
+  if (h.dataset.r !== undefined){ var r = +h.dataset.r; state.sel = {kind:"r", i:r}; }
+  else { var kind = h.dataset.kind, i = +h.dataset.i; state.sel = (state.sel && state.sel.kind === kind && state.sel.i === i) ? null : {kind:kind, i:i}; }
+  redrawSel();
+});
+
+var ex = $("esempi");
+EXAMPLES.forEach(function(nm){
+  var bt = document.createElement("button"); bt.type = "button"; bt.textContent = nm;
+  bt.addEventListener("click", function(){ $("nome").value = nm; update(false); });
+  ex.appendChild(bt);
+});
+
+var rt; window.addEventListener("resize", function(){ clearTimeout(rt); rt = setTimeout(function(){ if (C) renderSpectrum(C); }, 150); });
+
+var saved = false; try { saved = localStorage.getItem("peptide-esperto") === "1"; } catch(e){}
+$("esperto").checked = saved;
+state.expert = saved; document.body.classList.toggle("expert", saved);
+update(false);
+
+// codice QR e modalità app, solo quando la pagina è pubblicata su GitHub Pages
+try {
+  if (/github\.io$/.test(location.hostname) && typeof qrcode === "function"){
+    var q = qrcode(0, "M"); q.addData(location.origin + location.pathname); q.make();
+    $("qrimg").innerHTML = q.createImgTag(5, 0);
+    $("qr").classList.add("on");
+  }
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol) && !/claude/.test(location.hostname)){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+} catch(e){}
+})();
+
+</script>
+</body>
+</html>
